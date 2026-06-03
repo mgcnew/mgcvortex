@@ -1,8 +1,64 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 import { ArrowUpRight, Sparkles, Terminal } from "lucide-react"
+
+const EASE = [0.16, 1, 0.3, 1] as const
+const ROTATING = ["vende.", "converte.", "escala.", "encanta."]
+
+/* Rotating highlighted word with a re-drawing "marker" stroke */
+function RotatingHighlight() {
+  const reduce = useReducedMotion()
+  const [i, setI] = useState(0)
+  useEffect(() => {
+    if (reduce) return
+    const id = setInterval(() => setI((p) => (p + 1) % ROTATING.length), 2400)
+    return () => clearInterval(id)
+  }, [reduce])
+
+  return (
+    <span className="relative inline-grid align-baseline">
+      <span className="sr-only">vende.</span>
+      <AnimatePresence initial={false} mode="popLayout">
+        <motion.span
+          key={i}
+          aria-hidden
+          className="[grid-area:1/1] relative inline-block"
+          initial={reduce ? false : { opacity: 0, y: "0.4em" }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={reduce ? undefined : { opacity: 0, y: "-0.4em" }}
+          transition={{ duration: 0.3, ease: EASE }}
+        >
+          <motion.span
+            className="absolute inset-0 rounded-md bg-lime-300 dark:bg-lime-400"
+            style={{ rotate: -1, originX: 0 }}
+            initial={reduce ? false : { scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 0.4, ease: EASE, delay: 0.05 }}
+          />
+          <span className="relative z-10 px-2 text-zinc-950">{ROTATING[i]}</span>
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  )
+}
+
+/* Headline line with mask reveal */
+function Line({ children, delay, reduce }: { children: React.ReactNode; delay: number; reduce: boolean | null }) {
+  return (
+    <span className="block overflow-hidden pb-1">
+      <motion.span
+        className="block"
+        initial={reduce ? false : { y: "110%" }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6, ease: EASE, delay }}
+      >
+        {children}
+      </motion.span>
+    </span>
+  )
+}
 
 /* ---------- Animated code card ---------- */
 const codeLines = [
@@ -97,6 +153,7 @@ const fade = {
 }
 
 export function Hero() {
+  const reduce = useReducedMotion()
   const scrollTo = (id: string) =>
     document.querySelector(id)?.scrollIntoView({ behavior: "smooth" })
 
@@ -128,15 +185,18 @@ export function Hero() {
                 Sites & sistemas sob medida
               </div>
 
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.02] tracking-tight">
-                Seu negócio
-                <br />
-                rodando em algo
-                <br />
-                que{" "}
-                <span className="relative inline-block">
-                  <span className="relative z-10 px-2 text-zinc-950">vende.</span>
-                  <span className="absolute inset-0 -rotate-1 bg-lime-300 dark:bg-lime-400 rounded-md" />
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.08] tracking-tight" aria-label="Seu negócio rodando em algo que vende.">
+                <Line delay={0.1} reduce={reduce}>Seu negócio</Line>
+                <Line delay={0.22} reduce={reduce}>rodando em algo</Line>
+                <span className="block overflow-hidden pb-1">
+                  <motion.span
+                    className="block"
+                    initial={reduce ? false : { opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, ease: EASE, delay: 0.36 }}
+                  >
+                    que <RotatingHighlight />
+                  </motion.span>
                 </span>
               </h1>
 
