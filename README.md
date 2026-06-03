@@ -1,3 +1,14 @@
+# Site MGC Vortex
+
+> 📖 **Para manutenção do site (trocar textos, logo, telefone, cores, projetos),
+> leia o [GUIA-DE-MANUTENCAO.md](./GUIA-DE-MANUTENCAO.md)** — escrito em português e
+> sem jargão técnico.
+
+Site institucional da MGC Vortex — desenvolvimento de sistemas web.
+Stack: Next.js 16 + TypeScript + Tailwind CSS 4 + Framer Motion.
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
