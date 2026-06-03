@@ -9,8 +9,9 @@ import { mockups, type MockupKey } from "@/components/portfolio-mockups"
 type Project = { title: string; type: string; tags: string[]; mock: MockupKey; href?: string }
 
 const projects: Project[] = [
-  { title: "Dashboard Analytics", type: "Sistema Web", tags: ["Next.js", "TypeScript", "Charts"], mock: "dashboard", href: "/demos/dashboard" },
-  { title: "Aura Store", type: "E-commerce", tags: ["Next.js", "React", "Carrinho"], mock: "ecommerce", href: "/demos/loja" },
+  { title: "Praça — Marketplace", type: "Plataforma multi-vendedor", tags: ["Next.js", "Dashboard", "Multi-tela"], mock: "ecommerce", href: "/demos/marketplace" },
+  { title: "Lúmen — Finanças", type: "Sistema financeiro", tags: ["Next.js", "Fluxo de caixa", "Cartões"], mock: "finance", href: "/demos/financas" },
+  { title: "Camélia — Salão", type: "Agendamento de serviços", tags: ["Next.js", "Agenda", "Modais"], mock: "crm", href: "/demos/salao" },
   { title: "CRM de Vendas", type: "Sistema sob medida", tags: ["Next.js", "TypeScript", "Filtros"], mock: "crm", href: "/demos/crm" },
 ]
 
