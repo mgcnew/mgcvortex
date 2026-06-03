@@ -3,18 +3,42 @@
 import { useState } from "react"
 import { Send, MessageCircle, Mail, Phone, MapPin, CheckCircle, ArrowUpRight } from "lucide-react"
 
+const WEB3FORMS_KEY = "51748ad5-6b20-4b20-8ed1-0110c1759b62"
+
 export function Contact() {
   const [form, setForm] = useState({ name: "", email: "", message: "" })
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setTimeout(() => {
+    setError("")
+    try {
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          subject: "Novo contato pelo site — MGC Vortex",
+          from_name: "Site MGC Vortex",
+          name: form.name,
+          email: form.email,
+          message: form.message,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setSent(true)
+      } else {
+        setError("Não foi possível enviar agora. Tente pelo WhatsApp ao lado.")
+      }
+    } catch {
+      setError("Erro de conexão. Tente novamente ou fale pelo WhatsApp.")
+    } finally {
       setLoading(false)
-      setSent(true)
-    }, 1400)
+    }
   }
 
   const whatsappUrl =
@@ -77,6 +101,9 @@ export function Contact() {
                     placeholder="Conte sobre seu projeto ou ideia..."
                     className={`${inputClass} resize-none`} />
                 </div>
+                {error && (
+                  <p className="text-sm text-red-500 -mt-1" role="alert">{error}</p>
+                )}
                 <button
                   type="submit"
                   disabled={loading}
