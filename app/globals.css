@@ -197,18 +197,20 @@
   to { transform: translateX(-50%); }
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+/* Tinted date/time picker icon for dark "gold" forms */
+.picker-gold::-webkit-calendar-picker-indicator {
+  filter: invert(70%) sepia(45%) saturate(700%) hue-rotate(353deg) brightness(92%);
+  opacity: 0.85;
+  cursor: pointer;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
+
+/* Hidden scrollbars (still scrollable) — keeps each demo's palette clean */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/old Edge */
 }
-::-webkit-scrollbar-thumb {
-  background: var(--accent-lime);
-  border-radius: 4px;
-  opacity: 0.4;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-lime);
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* Chrome/Safari/Edge */
 }

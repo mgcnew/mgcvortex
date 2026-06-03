@@ -12,7 +12,9 @@ const projects: Project[] = [
   { title: "Praça — Marketplace", type: "Plataforma multi-vendedor", tags: ["Next.js", "Dashboard", "Multi-tela"], mock: "ecommerce", href: "/demos/marketplace" },
   { title: "Lúmen — Finanças", type: "Sistema financeiro", tags: ["Next.js", "Fluxo de caixa", "Cartões"], mock: "finance", href: "/demos/financas" },
   { title: "Camélia — Salão", type: "Agendamento de serviços", tags: ["Next.js", "Agenda", "Modais"], mock: "crm", href: "/demos/salao" },
-  { title: "CRM de Vendas", type: "Sistema sob medida", tags: ["Next.js", "TypeScript", "Filtros"], mock: "crm", href: "/demos/crm" },
+  { title: "Sorriso Feliz — Clínica", type: "Site institucional", tags: ["Next.js", "Landing", "Agendamento"], mock: "realestate", href: "/demos/clinica" },
+  { title: "Fornello — Restaurante", type: "Site institucional", tags: ["Next.js", "Cardápio", "Reservas"], mock: "restaurant", href: "/demos/restaurante" },
+  { title: "Habita — Imobiliária", type: "Portal de imóveis", tags: ["Next.js", "Busca", "Filtros"], mock: "property", href: "/demos/imobiliaria" },
 ]
 
 export function Portfolio() {

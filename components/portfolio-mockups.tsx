@@ -158,6 +158,49 @@ export function MockFinance() {
   )
 }
 
+/* 7. Restaurant menu */
+export function MockRestaurant() {
+  return (
+    <div className="absolute inset-0 p-3 flex flex-col gap-2 bg-secondary/40">
+      <div className="h-10 rounded-lg bg-foreground/10 flex items-center justify-center">
+        <div className="h-2 w-16 rounded-full bg-lime-400/70" />
+      </div>
+      <div className="flex-1 rounded-lg bg-card border border-border p-3 flex flex-col gap-2.5 justify-center">
+        {[14, 10, 16, 11].map((w, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <div className={`h-1.5 rounded-full ${bar}`} style={{ width: `${w * 4}px` }} />
+            <div className="flex-1 border-b border-dotted border-foreground/15" />
+            <div className="h-1.5 w-6 rounded-full bg-lime-400/70" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* 8. Property listing */
+export function MockProperty() {
+  return (
+    <div className="absolute inset-0 p-3 flex flex-col gap-2 bg-secondary/40">
+      <div className="h-6 rounded-lg bg-card border border-border flex items-center px-2 gap-1.5">
+        <div className="h-2 w-2 rounded-full bg-lime-400" />
+        <div className={`h-1.5 flex-1 ${bar}`} />
+      </div>
+      <div className="flex-1 grid grid-cols-2 gap-2">
+        {[0, 1].map((i) => (
+          <div key={i} className="rounded-lg bg-card border border-border overflow-hidden flex flex-col">
+            <div className="h-12 bg-foreground/10" />
+            <div className="p-1.5 flex flex-col gap-1">
+              <div className="h-2 w-10 rounded bg-lime-500/80" />
+              <div className={`h-1.5 w-full ${bar}`} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export const mockups = {
   dashboard: MockDashboard,
   ecommerce: MockEcommerce,
@@ -165,6 +208,8 @@ export const mockups = {
   delivery: MockDelivery,
   realestate: MockRealEstate,
   finance: MockFinance,
+  restaurant: MockRestaurant,
+  property: MockProperty,
 }
 
 export type MockupKey = keyof typeof mockups
