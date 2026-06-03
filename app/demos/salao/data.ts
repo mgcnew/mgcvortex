@@ -1,6 +1,6 @@
 /* Mock data for the "Camélia" salon scheduling demo. Fictitious only. */
 
-export const BRAND = { name: "Camélia", tagline: "studio & agenda", accent: "#b76e79" }
+export const BRAND = { name: "Camélia", tagline: "studio & gestão", accent: "#db2777" }
 
 export const brl = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })

@@ -1,336 +1,143 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { ChevronLeft, ChevronRight, Plus, X, Check, Clock, Scissors, CalendarDays, TrendingUp, ArrowUpRight } from "lucide-react"
-import { cormorant } from "./fonts"
+import Link from "next/link"
+import { motion } from "framer-motion"
+import { CalendarDays, TrendingUp, Clock, Users, ArrowRight, Scissors } from "lucide-react"
 import {
-  BRAND, brl, professionals, services, slots, initialAppointments,
-  type Appointment, type Status,
+  BRAND, brl, services, professionals, slots, initialAppointments,
 } from "./data"
 
-const serif = (e = "") => `${cormorant.className} ${e}`
+const accent = BRAND.accent
 const svc = (id: string) => services.find((s) => s.id === id)!
 const prof = (id: string) => professionals.find((p) => p.id === id)!
-const inputClass =
-  "w-full px-3 py-2.5 rounded-xl bg-background border border-border text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20 transition-all"
 
-export default function SalaoDemo() {
-  const [appts, setAppts] = useState<Appointment[]>(initialAppointments)
-  const [day, setDay] = useState(0)
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
+export default function SalaoDashboard() {
+  const today = initialAppointments.filter((a) => a.day === 0)
+  const faturamento = today.filter((a) => a.status !== "Pendente").reduce((s, a) => s + svc(a.serviceId).price, 0)
+  const ocupacao = Math.round((today.length / (slots.length * professionals.length)) * 100)
+  const clientes = new Set(initialAppointments.map((a) => a.client)).size
+  const proximos = [...today].sort((a, b) => a.time.localeCompare(b.time)).slice(0, 5)
 
-  // modals
-  const [newSlot, setNewSlot] = useState<{ time: string; profId: string } | null>(null)
-  const [detail, setDetail] = useState<Appointment | null>(null)
+  // serviços mais procurados
+  const counts: Record<string, number> = {}
+  initialAppointments.forEach((a) => { counts[a.serviceId] = (counts[a.serviceId] || 0) + 1 })
+  const topServ = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 4)
+  const maxServ = Math.max(...topServ.map(([, n]) => n))
 
-  const dayAppts = appts.filter((a) => a.day === day)
-  const at = (time: string, profId: string) => dayAppts.find((a) => a.time === time && a.profId === profId)
+  const week = [
+    { d: "Seg", n: 8 }, { d: "Ter", n: 11 }, { d: "Qua", n: 7 }, { d: "Qui", n: 13 },
+    { d: "Sex", n: 16 }, { d: "Sáb", n: 18 }, { d: "Dom", n: 4 },
+  ]
+  const maxWeek = Math.max(...week.map((w) => w.n))
 
-  const dateLabel = useMemo(() => {
-    const d = new Date()
-    d.setDate(d.getDate() + day)
-    return new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit", month: "long" }).format(d)
-  }, [day])
-
-  const faturamento = dayAppts
-    .filter((a) => a.status !== "Pendente")
-    .reduce((s, a) => s + svc(a.serviceId).price, 0)
-  const ocupacao = Math.round((dayAppts.length / (slots.length * professionals.length)) * 100)
-
-  const openNew = (time: string, profId: string) => setNewSlot({ time, profId })
-
-  const createAppt = (f: { client: string; serviceId: string; profId: string; time: string }) => {
-    setAppts((a) => [
-      ...a,
-      { id: `n${Date.now()}`, day, time: f.time, profId: f.profId, client: f.client.trim(), serviceId: f.serviceId, status: "Confirmado" },
-    ])
-    setNewSlot(null)
-  }
-
-  const setStatus = (id: string, status: Status) => {
-    setAppts((a) => a.map((x) => (x.id === id ? { ...x, status } : x)))
-    setDetail((d) => (d && d.id === id ? { ...d, status } : d))
-  }
-  const cancelAppt = (id: string) => {
-    setAppts((a) => a.filter((x) => x.id !== id))
-    setDetail(null)
-  }
-
-  const accent = BRAND.accent
+  const kpis = [
+    { icon: CalendarDays, label: "Agendamentos hoje", value: String(today.length) },
+    { icon: TrendingUp, label: "Faturamento previsto", value: brl(faturamento) },
+    { icon: Clock, label: "Ocupação do dia", value: `${ocupacao}%` },
+    { icon: Users, label: "Clientes ativos", value: String(clientes) },
+  ]
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
-      {/* Brand header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-full text-white" style={{ background: accent }}>
-            <span className={serif("text-xl font-semibold")}>C</span>
-          </div>
-          <div className="leading-tight">
-            <p className={serif("text-xl font-semibold")}>{BRAND.name}</p>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{BRAND.tagline}</p>
-          </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-5">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight">Visão geral</h1>
+          <p className="text-sm text-slate-500">Resumo do seu salão hoje.</p>
         </div>
-        <button
-          onClick={() => openNew("09:00", "p1")}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-white text-sm font-medium shadow-sm hover:opacity-90 transition-opacity"
-          style={{ background: accent }}
-        >
-          <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Novo agendamento</span>
-        </button>
+        <Link href="/demos/salao/agenda" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-white text-sm font-semibold hover:opacity-90 transition-opacity" style={{ background: accent }}>
+          Abrir agenda <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
 
-      {/* Date nav + stats */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3">
-          <button onClick={() => setDay((d) => Math.max(0, d - 1))} disabled={day === 0}
-            className="grid h-9 w-9 place-items-center rounded-full border border-border hover:bg-accent disabled:opacity-40">
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <div className="min-w-[200px] text-center">
-            <p className={serif("text-2xl font-semibold capitalize")}>{mounted ? dateLabel : "—"}</p>
-            <p className="text-xs text-muted-foreground">{day === 0 ? "Hoje" : day === 1 ? "Amanhã" : "Em breve"}</p>
+      {/* KPIs */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {kpis.map((k, i) => {
+          const Icon = k.icon
+          return (
+            <motion.div key={k.label} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+              className="rounded-2xl border border-slate-200 bg-white p-5">
+              <span className="grid h-9 w-9 place-items-center rounded-lg mb-3" style={{ background: `${accent}14`, color: accent }}>
+                <Icon className="h-4 w-4" />
+              </span>
+              <p className="text-2xl font-extrabold tracking-tight">{k.value}</p>
+              <p className="text-xs text-slate-500 mt-0.5">{k.label}</p>
+            </motion.div>
+          )
+        })}
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-3 sm:gap-4">
+        {/* Week chart */}
+        <div className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-bold">Agendamentos na semana</h2>
+            <span className="text-xs text-slate-400">últimos 7 dias</span>
           </div>
-          <button onClick={() => setDay((d) => Math.min(2, d + 1))} disabled={day === 2}
-            className="grid h-9 w-9 place-items-center rounded-full border border-border hover:bg-accent disabled:opacity-40">
-            <ChevronRight className="h-4 w-4" />
-          </button>
+          <div className="flex items-end gap-2 sm:gap-3 h-44">
+            {week.map((w, i) => (
+              <div key={w.d} className="flex-1 flex flex-col items-center gap-2">
+                <div className="w-full flex items-end justify-center h-full">
+                  <motion.div initial={{ height: 0 }} animate={{ height: `${(w.n / maxWeek) * 100}%` }}
+                    transition={{ delay: 0.2 + i * 0.05, type: "spring", stiffness: 120, damping: 15 }}
+                    className="w-full rounded-t-lg" style={{ background: accent, opacity: 0.5 + (w.n / maxWeek) * 0.5 }} />
+                </div>
+                <span className="text-[11px] text-slate-400">{w.d}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="flex gap-3">
-          {[
-            { icon: CalendarDays, label: "Agendamentos", value: String(dayAppts.length) },
-            { icon: TrendingUp, label: "Faturamento previsto", value: brl(faturamento) },
-            { icon: Clock, label: "Ocupação", value: `${ocupacao}%` },
-          ].map((s) => {
-            const Icon = s.icon
-            return (
-              <div key={s.label} className="flex items-center gap-2.5 rounded-2xl border border-border bg-card px-4 py-2.5">
-                <Icon className="h-4 w-4" style={{ color: accent }} />
-                <div>
-                  <p className={serif("text-base font-semibold leading-none")}>{s.value}</p>
-                  <p className="text-[10px] text-muted-foreground">{s.label}</p>
+        {/* Top serviços */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <h2 className="font-bold mb-5">Serviços mais procurados</h2>
+          <div className="space-y-4">
+            {topServ.map(([id, n]) => (
+              <div key={id}>
+                <div className="flex items-center justify-between text-sm mb-1.5">
+                  <span>{svc(id).name}</span>
+                  <span className="text-slate-400">{n}×</span>
                 </div>
+                <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${(n / maxServ) * 100}%` }}
+                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }} className="h-full rounded-full" style={{ background: accent }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Próximos agendamentos */}
+      <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+        <div className="flex items-center justify-between p-5 border-b border-slate-200">
+          <h2 className="font-bold">Próximos de hoje</h2>
+          <Link href="/demos/salao/agenda" className="text-sm font-medium" style={{ color: accent }}>Ver agenda</Link>
+        </div>
+        <div className="divide-y divide-slate-100">
+          {proximos.map((a) => {
+            const s = svc(a.serviceId)
+            const p = prof(a.profId)
+            return (
+              <div key={a.id} className="flex items-center gap-4 px-5 py-3.5">
+                <span className="font-mono text-sm text-slate-400 w-12">{a.time}</span>
+                <span className="grid h-9 w-9 place-items-center rounded-full" style={{ background: `${accent}14`, color: accent }}>
+                  <Scissors className="h-4 w-4" />
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate">{s.name} · {a.client}</p>
+                  <p className="text-xs text-slate-500">{p.name}</p>
+                </div>
+                <span className="text-sm tabular-nums hidden sm:block">{brl(s.price)}</span>
+                <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  a.status === "Confirmado" ? "text-emerald-600 bg-emerald-50"
+                  : a.status === "Concluído" ? "text-slate-500 bg-slate-100"
+                  : "text-amber-600 bg-amber-50"
+                }`}>{a.status}</span>
               </div>
             )
           })}
         </div>
       </div>
-
-      {/* Agenda grid */}
-      <div className="rounded-2xl border border-border bg-card overflow-x-auto">
-        <div className="min-w-[640px]">
-          {/* professional headers */}
-          <div className="grid border-b border-border" style={{ gridTemplateColumns: `64px repeat(${professionals.length}, minmax(0,1fr))` }}>
-            <div className="p-3" />
-            {professionals.map((p) => (
-              <div key={p.id} className="p-3 flex items-center gap-2.5 border-l border-border">
-                <div className={`h-8 w-8 rounded-full bg-gradient-to-br ${p.tone} grid place-items-center text-white text-xs font-bold`}>
-                  {p.name.split(" ").map((n) => n[0]).join("")}
-                </div>
-                <div className="leading-tight min-w-0">
-                  <p className="text-sm font-medium truncate">{p.name}</p>
-                  <p className="text-[10px] text-muted-foreground">{p.role}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* time rows */}
-          {slots.map((time) => (
-            <div key={time} className="grid border-b border-border last:border-0" style={{ gridTemplateColumns: `64px repeat(${professionals.length}, minmax(0,1fr))` }}>
-              <div className="p-2 text-xs font-mono text-muted-foreground flex items-start justify-end pr-3 pt-3">{time}</div>
-              {professionals.map((p) => {
-                const a = at(time, p.id)
-                if (a) {
-                  const s = svc(a.serviceId)
-                  return (
-                    <button key={p.id} onClick={() => setDetail(a)}
-                      className={`m-1 p-2.5 rounded-xl text-left border-l-2 hover:shadow-md transition-shadow ${a.status === "Concluído" ? "opacity-60" : ""}`}
-                      style={{
-                        background: `${accent}14`,
-                        borderLeftColor: accent,
-                        borderStyle: a.status === "Pendente" ? "dashed" : "solid",
-                        borderTopWidth: a.status === "Pendente" ? 1 : 0,
-                        borderRightWidth: a.status === "Pendente" ? 1 : 0,
-                        borderBottomWidth: a.status === "Pendente" ? 1 : 0,
-                        borderColor: a.status === "Pendente" ? accent : undefined,
-                      }}>
-                      <p className="text-xs font-semibold truncate">{s.name}</p>
-                      <p className="text-[11px] text-muted-foreground truncate">{a.client}</p>
-                      <p className="text-[10px] mt-0.5" style={{ color: accent }}>
-                        {a.status} · {s.duration}min
-                      </p>
-                    </button>
-                  )
-                }
-                return (
-                  <button key={p.id} onClick={() => openNew(time, p.id)}
-                    className="m-1 rounded-xl border border-dashed border-transparent hover:border-border hover:bg-accent/40 transition-colors group grid place-items-center min-h-[58px]">
-                    <Plus className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </button>
-                )
-              })}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* footer CTA */}
-      <div className="mt-8 flex items-center justify-between gap-4 flex-wrap">
-        <p className="text-sm text-muted-foreground">Sistema demonstrativo da MGC Vortex — imagine com a sua marca.</p>
-        <a href="/#contato" className="inline-flex items-center gap-2 text-sm font-medium" style={{ color: accent }}>
-          Quero um sistema assim <ArrowUpRight className="h-4 w-4" />
-        </a>
-      </div>
-
-      {/* ---------- New appointment modal ---------- */}
-      <AnimatePresence>
-        {newSlot && (
-          <NewApptModal slot={newSlot} onClose={() => setNewSlot(null)} onCreate={createAppt} />
-        )}
-      </AnimatePresence>
-
-      {/* ---------- Detail modal ---------- */}
-      <AnimatePresence>
-        {detail && (
-          <Modal onClose={() => setDetail(null)} title="Agendamento">
-            {(() => {
-              const s = svc(detail.serviceId)
-              const p = prof(detail.profId)
-              return (
-                <div className="space-y-5">
-                  <div className="flex items-center gap-3">
-                    <div className="grid h-12 w-12 place-items-center rounded-full" style={{ background: `${accent}1f` }}>
-                      <Scissors className="h-5 w-5" style={{ color: accent }} />
-                    </div>
-                    <div>
-                      <p className={serif("text-xl font-semibold")}>{s.name}</p>
-                      <p className="text-sm text-muted-foreground">{detail.client}</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <Info label="Profissional" value={p.name} />
-                    <Info label="Horário" value={`${detail.time} · ${s.duration}min`} />
-                    <Info label="Valor" value={brl(s.price)} />
-                    <Info label="Status" value={detail.status} />
-                  </div>
-                  <div className="flex gap-2 pt-1">
-                    {detail.status === "Pendente" && (
-                      <button onClick={() => setStatus(detail.id, "Confirmado")}
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-white text-sm font-medium" style={{ background: accent }}>
-                        <Check className="h-4 w-4" /> Confirmar
-                      </button>
-                    )}
-                    {detail.status !== "Concluído" && (
-                      <button onClick={() => setStatus(detail.id, "Concluído")}
-                        className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-accent">
-                        Concluir
-                      </button>
-                    )}
-                    <button onClick={() => cancelAppt(detail.id)}
-                      className="px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-rose-600 hover:bg-rose-500/10">
-                      Cancelar
-                    </button>
-                  </div>
-                </div>
-              )
-            })()}
-          </Modal>
-        )}
-      </AnimatePresence>
-
-    </div>
-  )
-}
-
-/* ---------- small UI helpers ---------- */
-function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        transition={{ duration: 0.15 }}
-        className="absolute inset-0 bg-zinc-950/60" onClick={onClose} />
-      <motion.div
-        initial={{ opacity: 0, scale: 0.98, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98 }}
-        transition={{ duration: 0.16, ease: "easeOut" }}
-        className="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className={`${cormorant.className} text-2xl font-semibold`}>{title}</h3>
-          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-lg hover:bg-accent">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-        {children}
-      </motion.div>
-    </div>
-  )
-}
-
-function NewApptModal({
-  slot,
-  onClose,
-  onCreate,
-}: {
-  slot: { time: string; profId: string }
-  onClose: () => void
-  onCreate: (f: { client: string; serviceId: string; profId: string; time: string }) => void
-}) {
-  const [client, setClient] = useState("")
-  const [serviceId, setServiceId] = useState("s1")
-  const [profId, setProfId] = useState(slot.profId)
-  const [time, setTime] = useState(slot.time)
-
-  return (
-    <Modal onClose={onClose} title="Novo agendamento">
-      <div className="space-y-4">
-        <Field label="Cliente">
-          <input autoFocus value={client} onChange={(e) => setClient(e.target.value)}
-            placeholder="Nome do cliente" className={inputClass} />
-        </Field>
-        <Field label="Serviço">
-          <select value={serviceId} onChange={(e) => setServiceId(e.target.value)} className={inputClass}>
-            {services.map((s) => <option key={s.id} value={s.id}>{s.name} — {brl(s.price)} ({s.duration}min)</option>)}
-          </select>
-        </Field>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Profissional">
-            <select value={profId} onChange={(e) => setProfId(e.target.value)} className={inputClass}>
-              {professionals.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-          </Field>
-          <Field label="Horário">
-            <select value={time} onChange={(e) => setTime(e.target.value)} className={inputClass}>
-              {slots.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
-          </Field>
-        </div>
-        <button onClick={() => onCreate({ client, serviceId, profId, time })} disabled={!client.trim()}
-          className="w-full py-3 rounded-xl text-white font-medium disabled:opacity-50 transition-opacity"
-          style={{ background: BRAND.accent }}>
-          Confirmar agendamento
-        </button>
-      </div>
-    </Modal>
-  )
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{label}</label>
-      {children}
-    </div>
-  )
-}
-
-function Info({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-border p-3">
-      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">{label}</p>
-      <p className="font-medium">{value}</p>
     </div>
   )
 }
