@@ -67,9 +67,9 @@ export default function MarketplaceLayout({ children }: { children: React.ReactN
   )
 
   return (
-    <div className="flex min-h-[calc(100vh-3rem)]">
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:flex w-60 flex-col border-r border-border bg-card sticky top-12 h-[calc(100vh-3rem)]">
+    <div className="flex h-[calc(100dvh-3rem)] overflow-hidden">
+      {/* Desktop sidebar — fixed within the app shell */}
+      <aside className="hidden lg:flex w-60 flex-col border-r border-border bg-card shrink-0 h-full">
         <SidebarContent />
       </aside>
 
@@ -84,9 +84,9 @@ export default function MarketplaceLayout({ children }: { children: React.ReactN
       )}
 
       {/* Main */}
-      <div className="flex-1 min-w-0 flex flex-col">
-        {/* Topbar */}
-        <header className="h-16 border-b border-border bg-card/60 backdrop-blur flex items-center gap-3 px-4 sm:px-6 sticky top-12 z-30">
+      <div className="flex-1 min-w-0 flex flex-col h-full">
+        {/* Topbar — stays fixed; only the content below scrolls */}
+        <header className="h-16 border-b border-border bg-card flex items-center gap-3 px-4 sm:px-6 shrink-0">
           <button onClick={() => setOpen(true)} className="lg:hidden grid h-9 w-9 place-items-center rounded-lg hover:bg-accent">
             <Menu className="h-5 w-5" />
           </button>
@@ -106,7 +106,7 @@ export default function MarketplaceLayout({ children }: { children: React.ReactN
           </div>
         </header>
 
-        <main className="flex-1 p-4 sm:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
       </div>
     </div>
   )
